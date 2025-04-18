@@ -38,3 +38,6 @@ CursoUnity/ProjectSettings/VFXManager.asset
 CursoUnity/ProjectSettings/XRSettings.asset
 CursoUnity/.vsconfig
 CursoUnity/Assets/Tiny Swords (Update 010)/*
+/CursoUnity/Logs/*
+/CursoUnity/Temp/*
+/.vscode/*

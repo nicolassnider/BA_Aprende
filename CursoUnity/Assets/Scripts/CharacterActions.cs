@@ -13,22 +13,32 @@ public class CharacterActions : MonoBehaviour
     public float energyDepletionRate = 20f; // Energy depletion rate while sprinting (per second)
     public float energyRegenRate = 10f; // Energy regeneration rate when not sprinting (per second)
 
-    private bool berserkActive = false; // Tracks if Berserk mode is active
-    private float berserkTimer = 0f; // Timer to track time since the game started
-    private float berserkActivationTime = 120f; // Time (in seconds) to activate Berserk mode
+    private Status berserkStatus; // Berserk status
+    private SpriteRenderer spriteRenderer; // Reference to the SpriteRenderer
 
     void Start()
     {
-        // Example of type casting
-        float f1 = 9.9f;
-        int ni = (int)f1;
+        // Initialize the Berserk status with a duration of 10 seconds and a cooldown of 30 seconds
+        berserkStatus = new Status("Berserk", 10f, 30f);
+        berserkStatus.OnActivate = ActivateBerserkEffects;
+        berserkStatus.OnDeactivate = DeactivateBerserkEffects;
+
+        // Get the SpriteRenderer component
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer == null)
+        {
+            Debug.LogError("SpriteRenderer not found on the character. Please attach a SpriteRenderer component.");
+        }
+
+        // Start a timer to activate Berserk after 2 minutes
+        Invoke(nameof(ActivateBerserk), 120f);
     }
 
     // Update is called once per frame
     void Update()
     {
-        // Update the Berserk timer
-        UpdateBerserkTimer();
+        // Update the Berserk status
+        berserkStatus.Update(Time.deltaTime);
 
         // Handle character movement
         MoveCharacter();
@@ -85,28 +95,37 @@ public class CharacterActions : MonoBehaviour
         }
     }
 
-    void UpdateBerserkTimer()
+    void ActivateBerserk()
     {
-        // Increment the timer
-        berserkTimer += Time.deltaTime;
+        // Activate the Berserk status
+        berserkStatus.Activate();
+    }
 
-        // Check if the timer has reached the activation time
-        if (!berserkActive && berserkTimer >= berserkActivationTime)
+    void ActivateBerserkEffects()
+    {
+        Debug.Log("Berserk mode activated! Damage is now multiplied.");
+
+        // Set the character's color to red
+        if (spriteRenderer != null)
         {
-            ActivateBerserk();
+            spriteRenderer.color = Color.red;
         }
     }
 
-    void ActivateBerserk()
+    void DeactivateBerserkEffects()
     {
-        // Activate Berserk mode
-        berserkActive = true;
-        Debug.Log("Berserk mode activated! Damage is now multiplied.");
+        Debug.Log("Berserk mode deactivated! Damage is back to normal.");
+
+        // Reset the character's color
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.color = Color.white;
+        }
     }
 
     public float GetDamage()
     {
         // Return the damage value, applying the Berserk multiplier if active
-        return berserkActive ? damage * berserkMultiplier : damage;
+        return berserkStatus.IsActive ? damage * berserkMultiplier : damage;
     }
 }
