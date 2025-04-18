@@ -1,73 +1,112 @@
+/// <summary>
+/// Represents a status effect with a duration and cooldown.
+/// </summary>
 public class Status
 {
-    public string Name { get; private set; } // Name of the status
-    public float Duration { get; private set; } // Duration of the status in seconds
-    public float CooldownDuration { get; private set; } // Cooldown time in seconds
-    public bool IsActive { get; private set; } // Whether the status is currently active
-    public bool IsOnCooldown { get; private set; } // Whether the status is on cooldown
+    /// <summary>
+    /// Gets the name of the status.
+    /// </summary>
+    public string Name { get; private set; }
 
-    private float activeTimer; // Timer to track the active duration
-    private float cooldownTimer; // Timer to track the cooldown duration
+    /// <summary>
+    /// Gets the duration of the status in seconds.
+    /// </summary>
+    public float Duration { get; private set; }
 
-    public System.Action OnActivate; // Callback for when the status is activated
-    public System.Action OnDeactivate; // Callback for when the status is deactivated
-    public System.Action OnCooldownEnd; // Callback for when the cooldown ends
+    /// <summary>
+    /// Gets the cooldown time of the status in seconds.
+    /// </summary>
+    public float CooldownDuration { get; private set; }
 
+    /// <summary>
+    /// Gets a value indicating whether the status is currently active.
+    /// </summary>
+    public bool IsActive => activeTimer > 0;
+
+    /// <summary>
+    /// Gets a value indicating whether the status is currently on cooldown.
+    /// </summary>
+    public bool IsOnCooldown => cooldownTimer > 0;
+
+    private float activeTimer; // Tracks the active duration of the status.
+    private float cooldownTimer; // Tracks the cooldown duration of the status.
+
+    /// <summary>
+    /// Occurs when the status is activated.
+    /// </summary>
+    public System.Action OnActivate;
+
+    /// <summary>
+    /// Occurs when the status is deactivated.
+    /// </summary>
+    public System.Action OnDeactivate;
+
+    /// <summary>
+    /// Occurs when the cooldown ends.
+    /// </summary>
+    public System.Action OnCooldownEnd;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Status"/> class.
+    /// </summary>
+    /// <param name="name">The name of the status.</param>
+    /// <param name="duration">The duration of the status in seconds.</param>
+    /// <param name="cooldownDuration">The cooldown time of the status in seconds.</param>
     public Status(string name, float duration, float cooldownDuration)
     {
         Name = name;
         Duration = duration;
         CooldownDuration = cooldownDuration;
-        IsActive = false;
-        IsOnCooldown = false;
         activeTimer = 0f;
         cooldownTimer = 0f;
     }
 
+    /// <summary>
+    /// Activates the status if it is not already active or on cooldown.
+    /// </summary>
     public void Activate()
     {
-        if (IsActive || IsOnCooldown) return; // Prevent activation if already active or on cooldown
+        if (IsActive || IsOnCooldown) return;
 
-        IsActive = true;
-        activeTimer = 0f;
+        activeTimer = Duration;
         OnActivate?.Invoke();
     }
 
+    /// <summary>
+    /// Updates the status timers for active duration and cooldown.
+    /// </summary>
+    /// <param name="deltaTime">The time elapsed since the last update.</param>
     public void Update(float deltaTime)
     {
-        if (IsActive)
+        // Update active timer
+        if (activeTimer > 0)
         {
-            // Update the active timer
-            activeTimer += deltaTime;
-            if (activeTimer >= Duration)
+            activeTimer -= deltaTime;
+            if (activeTimer <= 0)
             {
-                Deactivate();
+                activeTimer = 0;
+                StartCooldown();
+                OnDeactivate?.Invoke();
             }
         }
-        else if (IsOnCooldown)
+
+        // Update cooldown timer
+        if (cooldownTimer > 0)
         {
-            // Update the cooldown timer
-            cooldownTimer += deltaTime;
-            if (cooldownTimer >= CooldownDuration)
+            cooldownTimer -= deltaTime;
+            if (cooldownTimer <= 0)
             {
-                EndCooldown();
+                cooldownTimer = 0;
+                OnCooldownEnd?.Invoke();
             }
         }
     }
 
-    public void Deactivate()
+    /// <summary>
+    /// Starts the cooldown timer for the status.
+    /// </summary>
+    private void StartCooldown()
     {
-        if (!IsActive) return;
-
-        IsActive = false;
-        IsOnCooldown = true;
-        cooldownTimer = 0f;
-        OnDeactivate?.Invoke();
-    }
-
-    private void EndCooldown()
-    {
-        IsOnCooldown = false;
-        OnCooldownEnd?.Invoke();
+        cooldownTimer = CooldownDuration;
     }
 }
