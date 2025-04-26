@@ -61,6 +61,8 @@
     <Compile Include="Assets\Scripts\BoundaryLimiter.cs" />
     <Compile Include="Assets\Scripts\Status.cs" />
     <Compile Include="Assets\Scripts\CharacterActions.cs" />
+    <Compile Include="Assets\Scripts\WaterMassEnergyDrain.cs" />
+    <Compile Include="Assets\Scripts\MainCharEnergy.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
